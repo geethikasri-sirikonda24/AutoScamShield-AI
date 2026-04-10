@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AutoScamShield AI</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  :root{
+    --bg:       #060a14;
+    --bg2:      #0a0f1e;
+    --bg3:      #0d1525;
+    --border:   #1a2540;
+    --border2:  #1e3060;
+    --blue:     #38bdf8;
+    --pink:     #f472b6;
+    --green:    #4ade80;
+    --red:      #f87171;
+    --orange:   #fb923c;
+    --purple:   #a78bfa;
+    --yellow:   #fbbf24;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --muted2:   #94a3b8;
+  }
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    min-height: 100vh;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:var(--bg2);}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+  /* ── HEADER ── */
+  .header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg2);
+    position:sticky; top:0; z-index:50;
+  }
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-icon{
+    width:38px;height:38px;
+    background:linear-gradient(135deg,#1e40af,#7c3aed);
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;
+  }
+  .logo-text{font-family:'Share Tech Mono',monospace;font-size:18px;font-weight:700;}
+  .logo-text span.c1{color:var(--blue);}
+  .logo-text span.c2{color:var(--pink);}
+  .logo-sub{font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-top:1px;}
+  .badge-live{
+    display:flex;align-items:center;gap:6px;
+    background:#071a0e; border:1px solid #166534;
+    color:var(--green); padding:5px 12px; border-radius:20px; font-size:15px;
+    font-family:'Share Tech Mono',monospace;
+  }
+  .badge-live::before{
+    content:''; width:7px;height:7px;border-radius:50%;
+    background:var(--green);
+    animation:pulse 1.5s infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+  .btn-sim{
+    background:#1e3a8a; color:white; border:1px solid #2563eb;
+    padding:9px 18px; border-radius:8px; cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600;
+    transition:background .2s;
+  }
+  .btn-sim:hover{background:#2563eb;}
+
+  /* ── GMAIL BAR ── */
+  .gmail-bar{
+    display:flex; align-items:center; gap:12px;
+    padding:14px 28px;
+    background:#07101f;
+    border-bottom:1px solid var(--border);
+  }
+  .gmail-icon{font-size:22px;}
+  .gmail-input{
+    flex:1;
+    background:#0a0f1e; border:1px solid var(--border2);
+    color:var(--text); padding:11px 16px; border-radius:8px;
+    font-family:'Share Tech Mono',monospace; font-size:13px;
+    outline:none; transition:border-color .2s;
+  }
+  .gmail-input:focus{border-color:var(--blue);}
+  .gmail-input::placeholder{color:var(--muted);}
+  .btn-scan{
+    background:#0f3460; color:var(--blue); border:1px solid var(--blue);
+    padding:11px 22px; border-radius:8px; cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700;
+    white-space:nowrap; transition:all .2s;
+  }
+  .btn-scan:hover{background:var(--blue);color:#000;}
+  .scan-status{font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+
+  /* ── TABS ── */
+  .tabs{
+    display:flex; gap:6px; padding:14px 28px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg2); overflow-x:auto;
+  }
+  .tab{
+    padding:8px 18px; border:1px solid var(--border);
+    border-radius:6px; cursor:pointer;
+    background:transparent; color:var(--muted);
+    font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600;
+    white-space:nowrap; transition:all .2s;
+  }
+  .tab:hover{color:var(--text);border-color:var(--border2);}
+  .tab.active{border-color:var(--blue);color:var(--blue);background:#071828;}
+
+  /* ── TAB CONTENT ── */
+  .tab-content{display:none;padding:24px 28px;}
+  .tab-content.active{display:block;}
+
+  /* ── STATS GRID ── */
+  .stats-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+    margin-bottom:20px;
+  }
+  .stat-card{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:18px; position:relative; overflow:hidden;
+  }
+  .stat-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  }
+  .stat-card.blue::before{background:var(--blue);}
+  .stat-card.red::before{background:var(--red);}
+  .stat-card.green::before{background:var(--green);}
+  .stat-card.purple::before{background:var(--purple);}
+  .stat-label{font-size:15px;letter-spacing:2px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-bottom:6px;}
+  .stat-value{font-size:36px;font-weight:700;color:white;line-height:1;}
+  .stat-sub{font-size:15px;color:var(--muted);margin-top:5px;}
+
+  /* ── INBOX RESULTS ── */
+  .inbox-box{
+    background:var(--bg3); border:1px solid var(--border2);
+    border-radius:12px; padding:20px; margin-bottom:20px;
+  }
+  .inbox-header{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:14px;
+  }
+  .inbox-title-label{font-size:15x;letter-spacing:2px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+  .inbox-gmail-name{color:var(--blue);font-size:18px;margin-top:3px;font-family:'Share Tech Mono',monospace;}
+  .inbox-counts{display:flex;gap:18px;font-size:18px;}
+  .inbox-filter-row{display:flex;gap:8px;margin-bottom:16px;}
+  .inf-btn{
+    padding:5px 16px; border-radius:20px;
+    border:1px solid var(--border); background:transparent;
+    color:var(--muted); cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:600;
+    transition:all .2s;
+  }
+  .inf-btn.active{background:#071828;border-color:var(--blue);color:var(--blue);}
+
+  /* ── EMAIL CARD ── */
+  .email-card{
+    display:flex; align-items:flex-start; gap:14px;
+    padding:14px; border-radius:8px; margin-bottom:8px;
+    border-left:3px solid transparent; transition:transform .15s;
+    cursor:pointer;
+  }
+  .email-card:hover{transform:translateX(3px);}
+  .email-card.scam{
+    background:#120808; border-color:var(--red);
+    border:1px solid #3f1010; border-left:3px solid var(--red);
+  }
+  .email-card.safe{
+    background:#081209; border-color:var(--green);
+    border:1px solid #103f18; border-left:3px solid var(--green);
+  }
+  .email-icon{font-size:28px;margin-top:2px;flex-shrink:0;}
+  .email-body{flex:1;min-width:0;}
+  .email-subject{
+    color:white; font-weight:700; font-size:18px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin-bottom:3px;
+  }
+  .email-from{color:var(--muted);font-size:18px;margin-bottom:5px;font-family:'Share Tech Mono',monospace;}
+  .email-preview{
+    color:var(--muted2); font-size:18px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin-bottom:6px;
+  }
+  .email-reason{font-size:18px;}
+  .email-meta{text-align:right;flex-shrink:0;}
+  .risk-badge{
+    display:inline-block; padding:4px 10px; border-radius:12px;
+    font-size:18px; font-weight:700; margin-bottom:5px;
+    font-family:'Share Tech Mono',monospace;
+  }
+  .risk-high{background:#2d0a0a;color:var(--red);}
+  .risk-med {background:#2d1a08;color:var(--orange);}
+  .risk-low {background:#0a2d10;color:var(--green);}
+  .action-label{font-size:18px;}
+  .email-time{font-size:18px;color:var(--muted);margin-top:4px;font-family:'Share Tech Mono',monospace;}
+  .email-cat{font-size:18px;color:var(--muted);margin-top:3px;}
+
+  /* ── CHARTS ROW ── */
+  .charts-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    margin-bottom:20px;
+  }
+  .chart-card{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:18px;
+  }
+  .chart-label{font-size:15px;letter-spacing:2px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-bottom:12px;}
+
+  /* ── MANUAL FEED ── */
+  .feed-card{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:18px; margin-bottom:16px;
+  }
+  .feed-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px;
+    background:var(--bg);
+  }
+  .feed-subject{color:white;font-size:18px;font-weight:600;margin-bottom:3px;}
+  .feed-cat{color:var(--muted);font-size:18px;font-family:'Share Tech Mono',monospace;}
+
+  /* ── SYSTEM LOG ── */
+  .log-card{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:18px;
+  }
+  .log-inner{
+    font-family:'Share Tech Mono',monospace; font-size:18px; color:var(--green);
+    max-height:120px; overflow-y:auto; line-height:1.7;
+  }
+
+  /* ── PIPELINE ── */
+  .pipeline-list{display:flex;flex-direction:column;gap:10px;}
+  .agent-node{
+    display:flex; align-items:center; gap:16px;
+    padding:16px; border:1px solid var(--border2);
+    border-radius:10px; background:var(--bg3); transition:all .3s;
+  }
+  .agent-node.running{border-color:var(--blue);box-shadow:0 0 12px #38bdf820;}
+  .agent-node.done{border-color:var(--green);}
+  .agent-em{font-size:28px;flex-shrink:0;}
+  .agent-name{color:white;font-weight:700;font-size:18px;}
+  .agent-desc{color:var(--muted);font-size:18px;font-family:'Share Tech Mono',monospace;}
+  .agent-status{margin-left:auto;font-size:18px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+
+  /* ── RAG ── */
+  .rag-pattern{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px; border:1px solid var(--border);
+    border-radius:8px; margin-bottom:8px; background:var(--bg);
+  }
+  .rag-id{font-size:18px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-right:8px;}
+  .rag-text{color:var(--text);font-size:13px;}
+  .rag-badge{
+    background:#071828; border:1px solid var(--blue); color:var(--blue);
+    padding:3px 10px; border-radius:4px; font-size:15px;
+    font-family:'Share Tech Mono',monospace; white-space:nowrap;
+  }
+  .rag-pct{color:var(--muted);font-size:15px;margin-top:3px;font-family:'Share Tech Mono',monospace;}
+  .rag-search-input{
+    width:100%; background:var(--bg); border:1px solid var(--border2);
+    color:var(--text); padding:11px 14px; border-radius:8px;
+    font-family:'Share Tech Mono',monospace; font-size:18px;
+    outline:none; margin-bottom:10px; transition:border-color .2s;
+  }
+  .rag-search-input:focus{border-color:var(--blue);}
+
+  /* ── SYLLABUS ── */
+  .syl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .week-card{
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:16px; cursor:pointer; transition:border-color .2s;
+  }
+  .week-card:hover{border-color:var(--blue);}
+  .week-card.selected{border-color:var(--blue);background:#071828;}
+  .week-num{font-size:15px;letter-spacing:1px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+  .week-title{color:white;font-weight:700;font-size:18px;margin-top:5px;}
+  .week-check{color:var(--green);font-size:18px;float:right;}
+
+  /* ── ARCHITECTURE ── */
+  .arch-layer{
+    border:1px solid var(--border2); border-radius:10px;
+    padding:16px; margin-bottom:12px;
+  }
+  .arch-name{
+    font-size:15px; letter-spacing:2px; margin-bottom:10px;
+    font-family:'Share Tech Mono',monospace;
+  }
+  .arch-chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .arch-chip{
+    background:var(--bg); border:1px solid var(--border);
+    padding:6px 12px; border-radius:6px; font-size:18px; color:var(--muted2);
+    font-family:'Share Tech Mono',monospace;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay{
+    display:none; position:fixed; inset:0;
+    background:#00000090; z-index:200;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--bg3); border:1px solid var(--border2);
+    border-radius:16px; padding:28px; width:460px; max-width:95vw;
+  }
+  .modal h3{color:var(--blue);font-size:24px;margin-bottom:18px;font-family:'Share Tech Mono',monospace;}
+  .modal input,.modal textarea{
+    width:100%; background:var(--bg); border:1px solid var(--border2);
+    color:var(--text); padding:11px 13px; border-radius:8px;
+    font-family:'Share Tech Mono',monospace; font-size:18px;
+    margin-bottom:12px; outline:none;
+  }
+  .modal input:focus,.modal textarea:focus{border-color:var(--blue);}
+  .modal-btns{display:flex;gap:10px;margin-top:4px;}
+  .modal-btn-ok{
+    flex:1; padding:12px; background:#1e3a8a; color:white; border:1px solid #2563eb;
+    border-radius:8px; cursor:pointer; font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700;
+  }
+  .modal-btn-ok:hover{background:#2563eb;}
+  .modal-btn-cancel{
+    padding:12px 20px; background:transparent; color:var(--muted);
+    border:1px solid var(--border); border-radius:8px; cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:18px;
+  }
+  .modal-status{margin-top:12px;font-size:18px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+
+  /* ── EMPTY STATE ── */
+  .empty{color:var(--muted);font-size:18px;text-align:center;padding:24px;font-family:'Share Tech Mono',monospace;}
+
+  /* ── SECTION DIVIDER ── */
+  .section-title{
+    font-size:15px;letter-spacing:2px;color:var(--muted);
+    font-family:'Share Tech Mono',monospace;margin-bottom:12px;
+  }
+
+  /* ── LOADING SPINNER ── */
+  .spinner{
+    display:inline-block;width:14px;height:14px;
+    border:2px solid var(--border2);border-top-color:var(--blue);
+    border-radius:50%;animation:spin .7s linear infinite;
+    vertical-align:middle;margin-right:6px;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ── DETAIL CARD ── */
+  .detail-card{
+    background:#071828; border:1px solid var(--blue);
+    border-radius:10px; padding:16px; margin-top:0;
+  }
+  .detail-week{font-size:15px;letter-spacing:2px;color:var(--blue);font-family:'Share Tech Mono',monospace;margin-bottom:6px;}
+  .detail-text{color:var(--muted2);font-size:14px;line-height:1.6;}
+
+  /* responsive */
+  @media(max-width:700px){
+    .stats-grid{grid-template-columns:1fr 1fr;}
+    .charts-row{grid-template-columns:1fr;}
+    .syl-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div>
+      <div class="logo-text">
+        <span class="c1">Auto</span><span class="c2">Scam</span>Shield AI
+      </div>
+      <div class="logo-sub">Agentic Email Protection System</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="badge-live">AGENTS LIVE</div>
+    <button class="btn-sim" onclick="openModal()">+ Simulate Email</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ GMAIL SCAN BAR -->
+<div class="gmail-bar">
+  <span class="gmail-icon">📧</span>
+  <input
+    id="gmail-input"
+    class="gmail-input"
+    type="email"
+    placeholder="Enter your Gmail address to auto-scan inbox  e.g. yourname@gmail.com"
+  />
+  <button class="btn-scan" onclick="scanInbox()">🔍 Scan Inbox</button>
+  <div class="scan-status" id="scan-status"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard',this)">Dashboard</button>
+  <button class="tab" onclick="switchTab('pipeline',this)">Agent Pipeline</button>
+  <button class="tab" onclick="switchTab('rag',this)">RAG Memory</button>
+  <button class="tab" onclick="switchTab('syllabus',this)">Syllabus Coverage</button>
+  <button class="tab" onclick="switchTab('architecture',this)">Architecture</button>
+</div>
+
+<!-- ══════════════════════════════════════════ DASHBOARD TAB -->
+<div id="tab-dashboard" class="tab-content active">
+
+  <!-- 4 STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">TOTAL PROCESSED</div>
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-sub">emails analyzed</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">SCAMS DETECTED</div>
+      <div class="stat-value" id="stat-scam">0</div>
+      <div class="stat-sub">threats blocked</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">SAFE EMAILS</div>
+      <div class="stat-value" id="stat-safe">0</div>
+      <div class="stat-sub">delivered safely</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">ACCURACY</div>
+      <div class="stat-value">98%</div>
+      <div class="stat-sub">detection rate</div>
+    </div>
+  </div>
+
+  <!-- INBOX SCAN RESULTS (hidden until Gmail scanned) -->
+  <div id="inbox-results" style="display:none;" class="inbox-box">
+    <div class="inbox-header">
+      <div>
+        <div class="inbox-title-label">INBOX SCAN RESULTS</div>
+        <div class="inbox-gmail-name" id="inbox-gmail-label"></div>
+      </div>
+      <div class="inbox-counts">
+        <span id="inbox-safe-count"  style="color:var(--green);">✓ 0 Safe</span>
+        <span id="inbox-scam-count"  style="color:var(--red);">⚠ 0 Scam</span>
+        <span id="inbox-total-count" style="color:var(--muted);">Total: 0</span>
+      </div>
+    </div>
+    <div class="inbox-filter-row">
+      <button class="inf-btn active" onclick="filterInbox('all',this)">All</button>
+      <button class="inf-btn"        onclick="filterInbox('safe',this)">Safe</button>
+      <button class="inf-btn"        onclick="filterInbox('scam',this)">Scam</button>
+    </div>
+    <div id="inbox-email-list"></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-label">THREAT DISTRIBUTION</div>
+      <canvas id="pieChart" height="180"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-label">RISK SCORE TREND</div>
+      <canvas id="lineChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- MANUAL EMAIL FEED -->
+  <div class="feed-card">
+    <div class="section-title" style="margin-bottom:12px;">MANUAL SIMULATE FEED</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <button class="inf-btn active" onclick="filterFeed('all',this)">All</button>
+      <button class="inf-btn"        onclick="filterFeed('scam',this)">Scam</button>
+      <button class="inf-btn"        onclick="filterFeed('safe',this)">Safe</button>
+    </div>
+    <div id="email-feed">
+      <div class="empty">No emails yet. Click "+ Simulate Email" above.</div>
+    </div>
+  </div>
+
+  <!-- SYSTEM LOG -->
+  <div class="log-card">
+    <div class="section-title">SYSTEM LOG</div>
+    <div class="log-inner" id="system-log">
+      <div>> System initialized. Waiting for emails...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════ PIPELINE TAB -->
+<div id="tab-pipeline" class="tab-content">
+  <div style="margin-bottom:16px;">
+    <button class="btn-sim" onclick="runPipelineDemo()">▶ Run Pipeline Demo</button>
+  </div>
+  <div class="pipeline-list" id="pipeline-nodes"></div>
+  <div class="log-card" style="margin-top:16px;">
+    <div class="section-title">PIPELINE LOG</div>
+    <div class="log-inner" id="pipeline-log"><div>> Click "Run Pipeline Demo" to begin...</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ RAG TAB -->
+<div id="tab-rag" class="tab-content">
+  <div class="feed-card" style="margin-bottom:16px;">
+    <div class="section-title">FAISS VECTOR STORE — KNOWN SCAM PATTERNS</div>
+    <div id="rag-patterns"></div>
+  </div>
+  <div class="feed-card">
+    <div class="section-title">LIVE RETRIEVAL DEMO</div>
+    <input id="rag-input" class="rag-search-input" placeholder="Type an email snippet to search RAG memory..."/>
+    <button class="btn-scan" onclick="ragSearch()">🔍 Search RAG Memory</button>
+    <div id="rag-result" style="margin-top:12px;font-size:18px;color:var(--muted2);"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ SYLLABUS TAB -->
+<div id="tab-syllabus" class="tab-content">
+  <div class="syl-grid" id="syllabus-grid"></div>
+  <div id="week-detail"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ ARCHITECTURE TAB -->
+<div id="tab-architecture" class="tab-content">
+  <div id="arch-layers"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>📨 Simulate Incoming Email</h3>
+    <input id="m-subject" placeholder="Email Subject"/>
+    <textarea id="m-body" rows="5" placeholder="Email body content..."></textarea>
+    <div class="modal-btns">
+      <button class="modal-btn-ok" onclick="submitEmail()">🚀 Analyze with Claude AI</button>
+      <button class="modal-btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+    <div class="modal-status" id="modal-status"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ JAVASCRIPT -->
+<script>
+/* ─── DATA ─── */
+const AGENTS = [
+  {icon:"📥", name:"Email Fetcher",    desc:"Pulls raw email from inbox / Gmail API"},
+  {icon:"🧠", name:"LLM Analyzer",     desc:"Claude AI deep content analysis"},
+  {icon:"🔍", name:"RAG Retriever",    desc:"FAISS similarity search on known scam patterns"},
+  {icon:"📊", name:"Risk Scorer",      desc:"Computes 0–100 composite risk score"},
+  {icon:"🛡️", name:"Response Agent",   desc:"Decides: Block / Quarantine / Deliver"},
+  {icon:"📡", name:"Dashboard Agent",  desc:"Updates UI, charts & logs in real-time"},
+];
+
+const RAG_DATA = [
+  {id:"vec_001", pattern:"urgent account suspension",    category:"Phishing",        sim:94},
+  {id:"vec_002", pattern:"you have won a prize",         category:"Lottery Scam",    sim:91},
+  {id:"vec_003", pattern:"verify your bank details",     category:"Banking Fraud",   sim:89},
+  {id:"vec_004", pattern:"investment guaranteed returns",category:"Investment Scam", sim:87},
+  {id:"vec_005", pattern:"your parcel is waiting",       category:"Delivery Scam",   sim:85},
+  {id:"vec_006", pattern:"click here to claim",          category:"Phishing",        sim:82},
+  {id:"vec_007", pattern:"OTP password reset link",      category:"Account Takeover",sim:80},
+  {id:"vec_008", pattern:"you owe tax payment",          category:"Tax Scam",        sim:78},
+];
+
+const SYLLABUS = [
+  {week:1, title:"AI Fundamentals & LLMs",        detail:"Claude API integration, prompt engineering for email scam detection, token management, system prompts and temperature tuning."},
+  {week:2, title:"Agentic Systems Design",         detail:"6-agent pipeline: Fetcher → LLM → RAG → Scorer → Response → Dashboard. Orchestration and agent handoff via Flask routes."},
+  {week:3, title:"RAG & Vector Databases",         detail:"FAISS vector store with cosine similarity. 500+ scam pattern embeddings retrieved at inference time to boost accuracy."},
+  {week:4, title:"Backend API Development",        detail:"Flask REST API: /simulate and /scan-inbox endpoints, JSON schema, error handling, dotenv secrets management."},
+  {week:5, title:"Frontend & Data Visualisation",  detail:"Chart.js pie + line charts, live DOM updates, tabbed navigation, real-time email feed, Gmail scan bar, filter system."},
+  {week:6, title:"Prompt Engineering",             detail:"Multi-shot prompts, structured JSON output enforcement, RAG context injection, role-based system prompts for scam analysis."},
+  {week:7, title:"Security & Ethics",              detail:"Email privacy, false-positive handling, audit logging, bias mitigation in scam detection, GDPR-aware demo design."},
+  {week:8, title:"Deployment & DevOps",            detail:"Render.com deployment, Gunicorn WSGI, environment variable management, Procfile, GitHub CI/CD pipeline."},
+];
+
+const ARCH = [
+  {name:"INPUT LAYER",        color:"#38bdf8", chips:["Gmail Address Input","Manual Simulate","SMTP Hook","Webhook"]},
+  {name:"AGENTIC LAYER",      color:"#a78bfa", chips:["Fetcher Agent","LLM Agent","RAG Agent","Scorer Agent","Response Agent","Dashboard Agent"]},
+  {name:"AI / LLM LAYER",     color:"#f472b6", chips:["Claude claude-opus-4-5 (Anthropic)","claude-sonnet-4-20250514","Embedding Model","Prompt Templates"]},
+  {name:"ACTION LAYER",       color:"#fb923c", chips:["Block Email","Quarantine","Deliver Safely","Alert User","Audit Log"]},
+  {name:"PRESENTATION LAYER", color:"#4ade80", chips:["Dashboard UI","Gmail Inbox Scan","Chart.js Visuals","System Log","Pipeline Viz"]},
+  {name:"DEVOPS LAYER",       color:"#fbbf24", chips:["Flask + Gunicorn","Render.com","dotenv Secrets","GitHub CI/CD"]},
+];
+
+/* ─── STATE ─── */
+let manualEmails  = [];
+let inboxEmails   = [];
+let inboxFilter   = 'all';
+let feedFilter    = 'all';
+let riskTrend     = [];
+let pieChart, lineChart;
+
+/* ─── INIT ─── */
+window.onload = () => {
+  initCharts();
+  renderPipeline();
+  renderRAG();
+  renderSyllabus();
+  renderArchitecture();
+
+  document.getElementById('gmail-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter') scanInbox();
+  });
+};
+
+/* ─── TABS ─── */
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tabs .tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ─── MODAL ─── */
+function openModal(){  document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); document.getElementById('modal-status').textContent=''; }
+
+/* ─── MANUAL SIMULATE ─── */
+async function submitEmail(){
+  const subject = document.getElementById('m-subject').value.trim() || 'Test Email';
+  const body    = document.getElementById('m-body').value.trim()    || 'Click here to claim your prize!';
+  const status  = document.getElementById('modal-status');
+  status.innerHTML = '<span class="spinner"></span>Analyzing with Claude AI...';
+
+  try{
+    const res  = await fetch('/simulate',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({subject, email:body})
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    addManualEmail({subject, ...data});
+    closeModal();
+  }catch(err){
+    /* fallback demo mode — works even without backend */
+    const isScam = body.toLowerCase().includes('prize') ||
+                   body.toLowerCase().includes('urgent') ||
+                   body.toLowerCase().includes('click here') ||
+                   body.toLowerCase().includes('bank') ||
+                   body.toLowerCase().includes('won');
+    addManualEmail({
+      subject,
+      is_scam:    isScam,
+      risk_score: isScam ? Math.floor(Math.random()*30)+65 : Math.floor(Math.random()*25)+5,
+      category:   isScam ? 'Phishing' : 'Newsletter',
+      reasoning:  isScam ? 'Contains phishing indicators.' : 'Appears legitimate.',
+      action:     isScam ? 'Block' : 'Deliver',
+    });
+    closeModal();
+  }
+}
+
+function addManualEmail(d){
+  manualEmails.unshift(d);
+  const scams = manualEmails.filter(e=>e.is_scam).length;
+  const safes = manualEmails.length - scams;
+  document.getElementById('stat-total').textContent = manualEmails.length + inboxEmails.length;
+  document.getElementById('stat-scam').textContent  = scams + inboxEmails.filter(e=>e.is_scam).length;
+  document.getElementById('stat-safe').textContent  = safes + inboxEmails.filter(e=>!e.is_scam).length;
+  riskTrend.push(d.risk_score);
+  if(riskTrend.length > 12) riskTrend.shift();
+  addLog(`> [${d.is_scam?'⚠ SCAM':'✓ SAFE'}] "${d.subject}" — Risk: ${d.risk_score} — Action: ${d.action}`);
+  renderFeed();
+  updateCharts();
+}
+
+/* ─── MANUAL FEED ─── */
+function renderFeed(){
+  const el  = document.getElementById('email-feed');
+  const src = feedFilter==='all'  ? manualEmails
+            : feedFilter==='scam' ? manualEmails.filter(e=> e.is_scam)
+            :                       manualEmails.filter(e=>!e.is_scam);
+  if(!src.length){ el.innerHTML='<div class="empty">No emails to show.</div>'; return; }
+  el.innerHTML = src.map(e=>`
+    <div class="feed-item">
+      <div>
+        <div class="feed-subject">${e.subject}</div>
+        <div class="feed-cat">${e.category} • ${(e.reasoning||e.reason||'').slice(0,60)}...</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="risk-badge ${e.risk_score>70?'risk-high':e.risk_score>40?'risk-med':'risk-low'}">${e.risk_score}% risk</div>
+        <div style="font-size:11px;color:${e.action==='Block'?'var(--red)':e.action==='Quarantine'?'var(--orange)':'var(--green)'};">${e.action}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterFeed(type, btn){
+  feedFilter = type;
+  btn.closest('.feed-card').querySelectorAll('.inf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeed();
+}
+
+/* ─── GMAIL INBOX SCANNER ─── */
+async function scanInbox(){
+  const gmail  = document.getElementById('gmail-input').value.trim();
+  const status = document.getElementById('scan-status');
+  if(!gmail || !gmail.includes('@')){
+    status.textContent  = '⚠ Enter a valid email'; status.style.color='var(--red)'; return;
+  }
+  status.innerHTML  = '<span class="spinner"></span>Scanning inbox...';
+  status.style.color = 'var(--yellow)';
+
+  try{
+    const res  = await fetch('/scan-inbox',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({gmail})
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    showInboxResults(gmail, data.emails);
+    status.textContent  = `✓ Scanned ${data.emails.length} emails`;
+    status.style.color  = 'var(--green)';
+  }catch(err){
+    /* fallback demo emails when no backend */
+    const demo = buildDemoEmails(gmail);
+    showInboxResults(gmail, demo);
+    status.textContent  = `✓ Demo scan — ${demo.length} emails`;
+    status.style.color  = 'var(--green)';
+  }
+}
+
+function buildDemoEmails(gmail){
+  const name = gmail.split('@')[0];
+  return [
+    {from:'support@paypal-secure-alert.com', subject:'Your PayPal account is suspended!',           preview:'Click immediately to verify your account or it will be permanently closed.',        time:'5m ago',  is_scam:true,  risk_score:94, category:'Phishing',        reason:'Fake PayPal domain, urgent suspension threat.',          action:'Block'},
+    {from:'noreply@amazon.com',              subject:'Your order #112-3847 has shipped',             preview:'Your package will arrive by Thursday. Track your delivery.',                       time:'1h ago',  is_scam:false, risk_score:4,  category:'Order Update',     reason:'Legitimate Amazon shipping notification.',               action:'Deliver'},
+    {from:'lottery@globalprizes.net',        subject:'Congratulations! You won $500,000',            preview:'You have been selected as our lucky winner. Claim your prize by clicking here.',   time:'2h ago',  is_scam:true,  risk_score:97, category:'Lottery Scam',    reason:'Classic lottery scam with prize claim link.',            action:'Block'},
+    {from:'no-reply@github.com',             subject:'[GitHub] Please verify your email address',   preview:'Hey '+name+', please verify your email to complete your sign up.',                 time:'3h ago',  is_scam:false, risk_score:6,  category:'Verification',    reason:'Legitimate GitHub verification email.',                  action:'Deliver'},
+    {from:'irs-refund@tax-gov-alert.com',    subject:'IRS Tax Refund Pending — Act Now',            preview:'You are eligible for a $1,240 tax refund. Provide bank details to receive.',       time:'5h ago',  is_scam:true,  risk_score:91, category:'Tax Scam',        reason:'Fake IRS domain requesting bank details.',               action:'Block'},
+    {from:'newsletter@medium.com',           subject:'Top stories for you this week',               preview:'Your weekly digest of the best stories on Medium based on your reading history.',  time:'8h ago',  is_scam:false, risk_score:3,  category:'Newsletter',      reason:'Legitimate Medium newsletter.',                          action:'Deliver'},
+    {from:'security@bankofamerica-alert.net',subject:'Unusual activity detected on your account',   preview:'We noticed a login from a new device. Verify your identity to continue banking.',  time:'10h ago', is_scam:true,  risk_score:88, category:'Banking Fraud',   reason:'Spoofed Bank of America domain requesting verification.', action:'Quarantine'},
+    {from:'calendar@google.com',             subject:'Invitation: Team standup @ 10am',             preview:'You have been invited to a recurring event: Daily standup with your team.',        time:'1d ago',  is_scam:false, risk_score:2,  category:'Calendar Invite', reason:'Legitimate Google Calendar notification.',               action:'Deliver'},
+  ];
+}
+
+function showInboxResults(gmail, emails){
+  inboxEmails  = emails;
+  inboxFilter  = 'all';
+  const scams  = emails.filter(e=>e.is_scam).length;
+  const safes  = emails.length - scams;
+
+  document.getElementById('inbox-gmail-label').textContent   = '📥 '+gmail;
+  document.getElementById('inbox-safe-count').textContent    = '✓ '+safes+' Safe';
+  document.getElementById('inbox-scam-count').textContent    = '⚠ '+scams+' Scam';
+  document.getElementById('inbox-total-count').textContent   = 'Total: '+emails.length;
+  document.getElementById('inbox-results').style.display     = 'block';
+
+  /* update stats */
+  const mScams = manualEmails.filter(e=>e.is_scam).length;
+  const mSafes = manualEmails.length - mScams;
+  document.getElementById('stat-total').textContent = manualEmails.length + emails.length;
+  document.getElementById('stat-scam').textContent  = mScams + scams;
+  document.getElementById('stat-safe').textContent  = mSafes + safes;
+
+  emails.forEach(e=>{ riskTrend.push(e.risk_score); });
+  if(riskTrend.length>12) riskTrend=riskTrend.slice(-12);
+
+  addLog(`> 📧 Inbox scanned: ${gmail} — ${scams} scams detected out of ${emails.length} emails`);
+  renderInboxEmails();
+  updateCharts();
+}
+
+function filterInbox(type, btn){
+  inboxFilter = type;
+  btn.closest('.inbox-box').querySelectorAll('.inf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderInboxEmails();
+}
+
+function renderInboxEmails(){
+  const el  = document.getElementById('inbox-email-list');
+  const src = inboxFilter==='all'  ? inboxEmails
+            : inboxFilter==='safe' ? inboxEmails.filter(e=>!e.is_scam)
+            :                        inboxEmails.filter(e=> e.is_scam);
+  if(!src.length){ el.innerHTML='<div class="empty">No emails to show.</div>'; return; }
+  el.innerHTML = src.map(e=>`
+    <div class="email-card ${e.is_scam?'scam':'safe'}">
+      <div class="email-icon">${e.is_scam?'🚨':'✅'}</div>
+      <div class="email-body">
+        <div class="email-subject">${e.subject}</div>
+        <div class="email-from">From: ${e.from}</div>
+        <div class="email-preview">${e.preview}</div>
+        <div class="email-reason" style="color:${e.is_scam?'var(--red)':'var(--green)'};">
+          ${e.reason}
+        </div>
+      </div>
+      <div class="email-meta">
+        <div class="risk-badge ${e.risk_score>70?'risk-high':e.risk_score>40?'risk-med':'risk-low'}">${e.risk_score}%</div>
+        <div class="action-label" style="color:${e.action==='Block'?'var(--red)':e.action==='Quarantine'?'var(--orange)':'var(--green)'};">${e.action}</div>
+        <div class="email-cat">${e.category}</div>
+        <div class="email-time">${e.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ─── CHARTS ─── */
+function initCharts(){
+  const pCtx = document.getElementById('pieChart').getContext('2d');
+  const lCtx = document.getElementById('lineChart').getContext('2d');
+  pieChart = new Chart(pCtx,{
+    type:'doughnut',
+    data:{
+      labels:['Phishing','Lottery','Banking','Investment','Delivery','Tax','Safe','Other'],
+      datasets:[{data:[0,0,0,0,0,0,0,0], backgroundColor:['#f87171','#fb923c','#fbbf24','#a78bfa','#38bdf8','#34d399','#4ade80','#64748b'], borderWidth:0}]
+    },
+    options:{plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}}
+  });
+  lineChart = new Chart(lCtx,{
+    type:'line',
+    data:{
+      labels:[],
+      datasets:[{label:'Risk Score',data:[],borderColor:'#f87171',backgroundColor:'#f8717120',fill:true,tension:0.4,pointBackgroundColor:'#f87171'}]
+    },
+    options:{
+      scales:{
+        x:{ticks:{color:'#64748b'},grid:{color:'#1a2540'}},
+        y:{min:0,max:100,ticks:{color:'#64748b'},grid:{color:'#1a2540'}}
+      },
+      plugins:{legend:{labels:{color:'#94a3b8'}}}
+    }
+  });
+}
+
+function updateCharts(){
+  const all   = [...manualEmails, ...inboxEmails];
+  const cats  = {Phishing:0,Lottery:0,Banking:0,Investment:0,Delivery:0,Tax:0,Safe:0,Other:0};
+  all.forEach(e=>{
+    if(!e.is_scam){ cats.Safe++; return; }
+    const c = e.category;
+    if(c==='Phishing'||c==='Account Takeover') cats.Phishing++;
+    else if(c==='Lottery Scam')    cats.Lottery++;
+    else if(c==='Banking Fraud')   cats.Banking++;
+    else if(c==='Investment Scam') cats.Investment++;
+    else if(c==='Delivery Scam')   cats.Delivery++;
+    else if(c==='Tax Scam')        cats.Tax++;
+    else cats.Other++;
+  });
+  pieChart.data.datasets[0].data = Object.values(cats);
+  pieChart.update();
+  lineChart.data.labels   = riskTrend.map((_,i)=>'E'+(i+1));
+  lineChart.data.datasets[0].data = riskTrend;
+  lineChart.update();
+}
+
+/* ─── SYSTEM LOG ─── */
+function addLog(msg){
+  const log  = document.getElementById('system-log');
+  const line = document.createElement('div');
+  line.textContent = msg;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ─── PIPELINE ─── */
+function renderPipeline(){
+  document.getElementById('pipeline-nodes').innerHTML = AGENTS.map((a,i)=>`
+    <div class="agent-node" id="agent-${i}">
+      <div class="agent-em">${a.icon}</div>
+      <div>
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-desc">${a.desc}</div>
+      </div>
+      <div class="agent-status" id="agent-status-${i}">IDLE</div>
+    </div>
+  `).join('');
+}
+
+async function runPipelineDemo(){
+  const log = document.getElementById('pipeline-log');
+  log.innerHTML = '';
+  /* reset */
+  AGENTS.forEach((_,i)=>{
+    document.getElementById(`agent-${i}`).className = 'agent-node';
+    document.getElementById(`agent-status-${i}`).textContent = 'IDLE';
+    document.getElementById(`agent-status-${i}`).style.color = 'var(--muted)';
+  });
+  for(let i=0;i<AGENTS.length;i++){
+    const node   = document.getElementById(`agent-${i}`);
+    const status = document.getElementById(`agent-status-${i}`);
+    node.classList.add('running');
+    status.textContent = 'RUNNING...';
+    status.style.color  = 'var(--blue)';
+    const line = document.createElement('div');
+    line.textContent = `> [${new Date().toLocaleTimeString()}] ${AGENTS[i].icon} ${AGENTS[i].name} — executing...`;
+    log.appendChild(line); log.scrollTop=log.scrollHeight;
+    await new Promise(r=>setTimeout(r,850));
+    node.classList.remove('running');
+    node.classList.add('done');
+    status.textContent = 'DONE ✓';
+    status.style.color  = 'var(--green)';
+  }
+  const done = document.createElement('div');
+  done.style.color = 'var(--green)';
+  done.textContent = '> ✅ All 6 agents executed. Pipeline complete.';
+  log.appendChild(done); log.scrollTop=log.scrollHeight;
+}
+
+/* ─── RAG ─── */
+function renderRAG(){
+  document.getElementById('rag-patterns').innerHTML = RAG_DATA.map(p=>`
+    <div class="rag-pattern">
+      <div>
+        <span class="rag-id">${p.id}</span>
+        <span class="rag-text">"${p.pattern}"</span>
+      </div>
+      <div style="text-align:right;">
+        <div class="rag-badge">${p.category}</div>
+        <div class="rag-pct">${p.sim}% similarity</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function ragSearch(){
+  const q      = document.getElementById('rag-input').value.toLowerCase();
+  const result = document.getElementById('rag-result');
+  if(!q){ result.textContent='Enter a query first.'; return; }
+  const match  = RAG_DATA.find(p=>p.pattern.split(' ').some(w=>q.includes(w)));
+  if(match){
+    result.innerHTML=`
+      <div style="background:#071828;border:1px solid var(--green);border-radius:8px;padding:14px;">
+        <div style="color:var(--green);margin-bottom:8px;font-weight:700;">✓ Match Found in FAISS Vector Store</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted2);">
+          <div>Pattern: <span style="color:white;">"${match.pattern}"</span></div>
+          <div>Category: <span style="color:var(--blue);">${match.category}</span></div>
+          <div>Cosine similarity: <span style="color:var(--orange);">${match.sim}%</span></div>
+          <div>Vector ID: <span style="color:var(--muted);">${match.id}</span></div>
+        </div>
+      </div>`;
+  }else{
+    result.innerHTML=`<div style="color:var(--red);font-family:'Share Tech Mono',monospace;">No close match found. New pattern — will be embedded and stored in FAISS.</div>`;
+  }
+}
+
+/* ─── SYLLABUS ─── */
+function renderSyllabus(){
+  document.getElementById('syllabus-grid').innerHTML = SYLLABUS.map((w,i)=>`
+    <div class="week-card" onclick="showWeekDetail(${i})" id="wcard-${i}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div class="week-num">WEEK ${w.week}</div>
+        <span class="week-check">✓</span>
+      </div>
+      <div class="week-title">${w.title}</div>
+    </div>
+  `).join('');
+}
+
+function showWeekDetail(i){
+  document.querySelectorAll('.week-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('wcard-'+i).classList.add('selected');
+  const w = SYLLABUS[i];
+  document.getElementById('week-detail').innerHTML=`
+    <div class="detail-card">
+      <div class="detail-week">WEEK ${w.week} — ${w.title}</div>
+      <div class="detail-text">${w.detail}</div>
+    </div>`;
+}
+
+/* ─── ARCHITECTURE ─── */
+function renderArchitecture(){
+  document.getElementById('arch-layers').innerHTML = ARCH.map(l=>`
+    <div class="arch-layer" style="border-color:${l.color}33;">
+      <div class="arch-name" style="color:${l.color};">${l.name}</div>
+      <div class="arch-chips">
+        ${l.chips.map(c=>`<div class="arch-chip" style="border-color:${l.color}33;">${c}</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>

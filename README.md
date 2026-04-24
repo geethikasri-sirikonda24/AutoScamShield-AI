@@ -318,4 +318,8 @@ This README follows standard GitHub Markdown formatting:
 **Solution:** The app gracefully falls back to the "Manual Simulate" mode, which uses the same Claude AI analysis pipeline without requiring IMAP. The inbox scan feature works on unrestricted networks or when "Less secure app access" / App Passwords are configured in Gmail settings.
 
 ---
+
+## 📊 Project Presentation
+
+[Click here to view/download the PPT](./AutoScamShield_AI.pptx)
 <br>

@@ -253,6 +253,11 @@ autoscamshield/
 
 ---
 
+## 📊 Project Presentation
+
+[Click here to view/download the PPT](./AutoScamShield_AI.pptx)
+
+---
 
 ## 10. Formatting Note
 This README follows standard GitHub Markdown formatting:
@@ -319,7 +324,4 @@ This README follows standard GitHub Markdown formatting:
 
 ---
 
-## 📊 Project Presentation
-
-[Click here to view/download the PPT](./AutoScamShield_AI.pptx)
 <br>
